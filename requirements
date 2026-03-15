@@ -1,0 +1,17 @@
+# Install dep (one-time)
+pip3 install aiohttp --break-system-packages
+
+# Full blast — all 100 lists
+python3 mailstress.py -e test@yourdomain.com
+
+# Security intel lists only (16 lists)
+python3 mailstress.py -e test@yourdomain.com --category security
+
+# Preview without firing (dry run)
+python3 mailstress.py -e test@yourdomain.com --dry-run
+
+# Crank up threads + export results
+python3 mailstress.py -e test@yourdomain.com --threads 30 --export
+
+# See all categories and list counts
+python3 mailstress.py --list-categories
