@@ -20,6 +20,7 @@ import argparse
 import asyncio
 import json
 import random
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -439,11 +440,11 @@ async def submit(session: aiohttp.ClientSession, target: Target,
         if target.method == "POST":
             r = await session.post(target.url, data=payload, headers=hdrs,
                                    timeout=aiohttp.ClientTimeout(total=12),
-                                   allow_redirects=True, ssl=False)
+                                   allow_redirects=True)
         else:
             r = await session.get(target.url, params=payload, headers=hdrs,
                                   timeout=aiohttp.ClientTimeout(total=12),
-                                  allow_redirects=True, ssl=False)
+                                  allow_redirects=True)
 
         # Many signup pages return 200/302 for any input — we treat both as success
         success = r.status in (200, 201, 301, 302, 303)
@@ -467,7 +468,7 @@ async def run_all(targets: list[Target], email: str,
     semaphore = asyncio.Semaphore(concurrency)
     total = len(targets)
 
-    connector = aiohttp.TCPConnector(ssl=False, limit=concurrency)
+    connector = aiohttp.TCPConnector(limit=concurrency)
     async with aiohttp.ClientSession(connector=connector) as session:
 
         async def bounded(t: Target, idx: int) -> Result:
@@ -578,6 +579,10 @@ async def async_main(args):
 
     if not args.email:
         print(f"{R}[!] --email is required. Run with --help for usage.{X}")
+        sys.exit(1)
+
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", args.email):
+        print(f"{R}[!] Invalid email address: {args.email}{X}")
         sys.exit(1)
 
     targets = LISTS
